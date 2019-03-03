@@ -20,7 +20,7 @@
     "TodoApi": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "api/values",
+      "launchUrl": "api/todos",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
