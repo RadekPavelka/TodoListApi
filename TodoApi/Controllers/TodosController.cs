@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using TodoApi.Models;
 using TodoApi.Services;
@@ -41,6 +42,10 @@ namespace TodoApi.Controllers
         [HttpPost]
         public ActionResult<TodoItem> Create(TodoItem todo)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             _todoService.Create(todo);
             return CreatedAtRoute("Get", new { id = todo.Id.ToString() }, todo);
         }
@@ -50,6 +55,11 @@ namespace TodoApi.Controllers
         [HttpPut("{id}")]
         public IActionResult Update(string id, TodoItem todoIn)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+        
             var todo = _todoService.Get(id);
             if (todo == null)
             {

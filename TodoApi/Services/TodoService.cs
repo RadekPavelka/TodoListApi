@@ -11,7 +11,7 @@ namespace TodoApi.Services
 
         public TodoService(IConfiguration config)
         {
-            var client = new MongoClient(config.GetConnectionString("TodosDb"));
+            var client = new MongoClient(config["Todos:ConnectionString"]);
             var database = client.GetDatabase("todos-db");
             _todos = database.GetCollection<TodoItem>("todos");
         }
