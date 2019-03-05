@@ -1,84 +1,86 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using TodoApi.Models;
-using TodoApi.Services;
+using TodoApi.Repositories;
 
 namespace TodoApi.Controllers
-{
+{   
     [Route("api/[controller]")]
+    [Produces("application/json")]
     [ApiController]
     public class TodosController : ControllerBase
     {
-        private readonly TodoService _todoService;
+        private readonly ITodoRepository _todoRepository;
 
-        public TodosController(TodoService todoService)
+        public TodosController(ITodoRepository todoRepository)
         {
-            _todoService = todoService;
+            _todoRepository = todoRepository;
         }
 
 
         // GET: api/Todos
         [HttpGet]
-        public ActionResult<List<TodoItem>> Get()
+        public async Task<ActionResult> Get()
         {
-            return _todoService.Get();
+            return Ok(await _todoRepository.GetAllTodos());
         }
 
         // GET: api/Todos/id
         [HttpGet("{id}", Name = "Get")]
-        public ActionResult<TodoItem> Get(string id)
+        public async Task<ActionResult<TodoItem>> Get(string id)
         {
-            var todo = _todoService.Get(id);
+            var todo = await _todoRepository.GetTodo(id);
             if (todo == null)
             {
                 return NotFound();
             }
 
-            return todo;
+            return Ok(todo);
         }
 
         // POST: api/Todos
         [HttpPost]
-        public ActionResult<TodoItem> Create(TodoItem todo)
+        public async Task<ActionResult<TodoItem>> Create(TodoItem todo)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            _todoService.Create(todo);
-            return CreatedAtRoute("Get", new { id = todo.Id.ToString() }, todo);
+            await _todoRepository.CreateTodo(todo);
+            return CreatedAtRoute("Get", new { id = todo.Id }, todo);
         }
 
 
         // PUT: api/Todos/id
         [HttpPut("{id}")]
-        public IActionResult Update(string id, TodoItem todoIn)
+        public async Task<ActionResult> Update(string id, TodoItem todoIn)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
         
-            var todo = _todoService.Get(id);
-            if (todo == null)
+            var todoFromDb = await _todoRepository.GetTodo(id);
+            if (todoFromDb == null)
             {
                 return NotFound();
             }
-            _todoService.Update(id, todoIn);
+
+            todoIn.Id = todoFromDb.Id;
+            await _todoRepository.UpdateTodo(id, todoIn);
             return NoContent();
         }
 
         // DELETE: api/Todos/id
         [HttpDelete("{id}")]
-        public IActionResult Delete(string id)
+        public async Task<ActionResult> Delete(string id)
         {
-            var todo = _todoService.Get(id);
+            var todo = await _todoRepository.GetTodo(id);
             if (todo == null)
             {
                 return NotFound();
             }
-            _todoService.Remove(todo.Id);
+            await _todoRepository.RemoveTodo(todo.Id);
             return NoContent();
         }
     }
